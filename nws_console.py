@@ -5,7 +5,6 @@
     Purpose: OOP console app
     Get weather data from the National Weather Service
 """
-import os
 # Openweather map url, api key, and other weather utilities
 import nws_class
 
@@ -29,7 +28,7 @@ def menu():
 
 #-------------------------- MAIN PROGRAM ----------------------------#
 def main():
-    clear_console()
+
     # Create weather object
     weather = nws_class.WeatherClass()
     # Get the location from the user
@@ -46,47 +45,42 @@ def main():
 
         # Get current weather and air quality
         elif menu_choice == "1":
-            clear_console()
+            weather.clear_console()
             weather.get_weather()
             weather.display_weather()
 
         # Get 12 hour forecast
         elif menu_choice == "2":
-            clear_console()
+            weather.clear_console()
             weather.get_twelve_hour_forecast()
 
         # Get 7 day forecast
         elif menu_choice == "3":
-            clear_console()
+            weather.clear_console()
             weather.get_forecast()
 
         # Get and display 7 day detailed forecast
         elif menu_choice == "4":
-            clear_console()
+            weather.clear_console()
             weather.get_detailed_forecast()
 
         # Get and display weather alerts
         elif menu_choice == "5":
-            clear_console()
+            weather.clear_console()
             weather.get_active_weather_alerts()
 
         # Get and display weather alerts
         elif menu_choice == "6":
-            clear_console()
+            weather.clear_console()
             weather.get_weather_alerts()
 
         # Make API call for a new location
         elif menu_choice == "9":
-            clear_console()
+            weather.clear_console()
             weather.get_location()
 
     # Say goodbye to the user as the program exits
     print("Good bye from the National Weather Service App")
-
-
-def clear_console():
-    # Clear the console
-    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 main()

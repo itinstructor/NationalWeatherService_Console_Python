@@ -9,6 +9,7 @@
 
 import requests
 import textwrap
+import os   # Clear the console
 import weather_utils
 # import geocode_owm for reverse geocode
 import geocode_geopy
@@ -18,6 +19,7 @@ from datetime import datetime
 class WeatherClass:
     def __init__(self):
         """ Initialize object """
+        self.clear_console()
         print(weather_utils.title("Welcome to Bill's NWS Weather App!"))
         self.__decorator_width = 75
 
@@ -28,15 +30,15 @@ class WeatherClass:
         """
         # try:
         # Get location input from user
-        lat, lng, address = geocode_geopy.geocode()
-        print(address)
+        lat, lng, self.__address = geocode_geopy.geocode()
+        print(self.__address)
 
         # Get the gridpoints from lat and lng
         points_url = weather_utils.NWS_ENDPOINT + "/points/" + \
             str(lat) + "," + str(lng)
 
         # Get the gridpoints response
-        response = requests.get(points_url)
+        response = requests.get(points_url, timeout=1)
 
         # Get gridpoints dictionary
         if(response.status_code == 200):
@@ -51,7 +53,7 @@ class WeatherClass:
             forecast_url = grid_points_dict.get("properties").get("forecast")
 
             # station_url = grid_points.get("properties").get("observationStations")
-            response = requests.get(forecast_url)
+            response = requests.get(forecast_url, timeout=1)
         else:
             print("[-] Did not get NWS Gridpoints")
 
@@ -65,7 +67,7 @@ class WeatherClass:
             # Get observation station URL
             forecast_hourly_url = grid_points_dict.get(
                 "properties").get("forecastHourly")
-            response = requests.get(forecast_hourly_url)
+            response = requests.get(forecast_hourly_url, timeout=1)
         else:
             print(
                 f"[-] Did not get NWS 7 Day Forecast - Response: {response.status_code}")
@@ -81,7 +83,7 @@ class WeatherClass:
             # Get observation station URL
             stations_url = grid_points_dict.get(
                 "properties").get("observationStations")
-            response = requests.get(stations_url)
+            response = requests.get(stations_url, timeout=1)
         else:
             print(
                 f"[-] Did not get NWS Hourly Forecast - Response: {response.status_code}")
@@ -97,7 +99,7 @@ class WeatherClass:
 
             observations_url = weather_utils.NWS_ENDPOINT + \
                 "stations/" + self.station_id + "/observations/latest"
-            response = requests.get(observations_url)
+            response = requests.get(observations_url, timeout=1)
         else:
             print(
                 f"[-] Did not get Station ID - - Response: {response.status_code}")
@@ -118,7 +120,7 @@ class WeatherClass:
             print(f"\r[+] [###### ]", end="")
             self.alert_dict = response.json()
             active_alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lng}"
-            response = requests.get(active_alerts_url)
+            response = requests.get(active_alerts_url, timeout=1)
             print(f"\r[+] [#######]")
             self.active_alert_dict = response.json()
         else:
@@ -130,7 +132,7 @@ class WeatherClass:
         """ Get weather alerts  """
         print("="*self.__decorator_width)
         print(f"National Weather Service Active Weather Alerts")
-        # print(f"{self.__address}")
+        print(f"{self.__address}")
         print("="*self.__decorator_width)
         # print(self.alert_dict.get("features")[0].get("properties").get("areaDesc"))
         active_alert_list = self.active_alert_dict.get("features")[:]
@@ -164,14 +166,14 @@ class WeatherClass:
                 print(f"{description}")
                 input("Press the enter key for the next alert")
         else:
-            print("There are no weather alerts at this time.")
+            print("No active weather alerts at this time.")
 
 #-------------------------- GET WEATHER ALERTS ----------------------------#
     def get_weather_alerts(self):
         """ Get weather alerts  """
         print("="*self.__decorator_width)
         print(f"National Weather Service Weather Alerts")
-        # print(f"{self.__address}")
+        print(f"{self.__address}")
         print("="*self.__decorator_width)
         # print(self.alert_dict.get("features")[0].get("properties").get("areaDesc"))
         alert_list = self.alert_dict.get("features")[:]
@@ -205,7 +207,7 @@ class WeatherClass:
                 print(f"{description}")
                 input("Press the enter key for the next alert")
         else:
-            print("There are no weather alerts at this time.")
+            print("No weather alerts at this time.")
 
 #-------------------------- GET 12 HOUR FORECAST ----------------------------#
     def get_twelve_hour_forecast(self):
@@ -213,7 +215,7 @@ class WeatherClass:
         print("="*self.__decorator_width)
         print(
             f"National Weather Service 12 Hour Weather Forecast")
-        # print(f"{self.__address}")
+        print(f"{self.__address}")
         print("="*self.__decorator_width)
         # Slice 12 hours out of the hourly forecast list
         hourly_slice = self.forecast_hourly_list[:12]
@@ -239,6 +241,10 @@ class WeatherClass:
         # Get latest weather observation from dictionary
         # Shorten up weather observations dictionary code
         weather_obs = self.weather_dict.get("properties")
+
+        timestamp = weather_obs.get("timestamp")
+        timestamp = datetime.fromisoformat(timestamp)
+        self.__timestamp = timestamp.strftime("%m/%d/%Y, %I:%M %p")
 
         self.__description = weather_obs.get("textDescription")
 
@@ -313,7 +319,8 @@ class WeatherClass:
         WIDTH = 15
         print("="*self.__decorator_width)
         print(f"National Weather Service Latest Weather Observations")
-        print(f"Station: {self.station_id} {self.station_name}")
+        print(
+            f"Station: {self.station_id} {self.station_name} {self.__timestamp}")
         print("="*self.__decorator_width)
         print(f"{self.__description}")
         print(f"{'Temperature:':{WIDTH}} {self.__temperature}°F")
@@ -332,7 +339,7 @@ class WeatherClass:
         print("="*self.__decorator_width)
         print(
             f"National Weather Service 7 Day Weather Forecast")
-        # print(f"{self.__address}")
+        print(f"{self.__address}")
         print("="*self.__decorator_width)
 
         # Iterate through each item in the forecast list
@@ -356,9 +363,9 @@ class WeatherClass:
         print("="*self.__decorator_width)
         print(
             f"National Weather Service 7 Day Weather Forecast")
-        # print(f"{self.__address}")
+        print(f"{self.__address}")
         print("="*self.__decorator_width)
-
+        counter = 0
         # Iterate through each item in the forecast list
         for forecast_item in self.forecast_list:
             # start_time = forecast_item.get("startTime")
@@ -372,41 +379,16 @@ class WeatherClass:
             detailed_forecast = wrapper.fill(text=detailed_forecast)
             # time = datetime.fromisoformat(start_time)
             # time = time.strftime('%m-%d-%Y')
-            print(f"* {name}: {detailed_forecast}")
+            print(f"{name}: \n{detailed_forecast}\n")
             # print(f"{temperature} °F | {wind_speed:5} {wind_direction}")
             # print(f'{detailed_forecast}')
+            counter += 1
+            if (counter % 4 == 0):
+                input("Press Enter for More")
+                self.clear_console()
+                # print("="*self.__decorator_width)
 
-#------------------------------- AIR QUALITY INDEX -------------------------------------#
-    def get_air_quality_index(self):
-        """ 
-            Get Air Quality Index from OpenWeatherMap
-        """
-        params = {
-            "lat": self.__latitude,
-            "lon": self.__longitude
-        }
-        # Build request with url and parameters
-        url = weather_utils.AQI_ENDPOINT
-        response = requests.get(url, params)
-        # print(response.text)
-
-        # If the status_code is 200, successful connection and data
-        if(response.status_code == 200):
-            # Load json response into __weather dictionary
-            data = response.json()
-            # Get Air Quality Index
-            self.__aqi = data.get("list")[0].get("main").get("aqi")
-
-            # Convert AQI to text
-            if self.__aqi == 1:
-                self.__aqi_string = "Good"
-            elif self.__aqi == 2:
-                self.__aqi_string = "Fair"
-            elif self.__aqi == 3:
-                self.__aqi_string = "Moderate"
-            elif self.__aqi == 4:
-                self.__aqi_string = "Poor"
-            elif self.__aqi == 5:
-                self.__aqi_string = "Very Poor"
-            else:
-                self.__aqi_string = "No AQI Reading"
+#-------------------------- CLEAR CONSOLE ----------------------------#
+    def clear_console(self):
+        # Clear the console
+        os.system('cls' if os.name == 'nt' else 'clear')
