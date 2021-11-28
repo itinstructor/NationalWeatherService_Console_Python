@@ -6,6 +6,7 @@
     for easy import into OpenWeatherMap based apps
 """
 import datetime
+from time import sleep
 import math
 
 
@@ -14,10 +15,10 @@ NWS_ENDPOINT = "https://api.weather.gov/"
 
 #--------------------------- CONVERT TO CELSIUS TO FAHRENHEIT--------------------#
 def celsius_to_fahrenheit(celsius):
-    return round((((celsius * 9) / 5) + 32), 1)
+    return round((((celsius * 9.0) / 5.0) + 32), 1)
 
 
-#--------------------------- CONVERT TIME -----------------------------------#
+#--------------------------- CONVERT DAY TIME -----------------------------------#
 def convert_day_time(unix_time):
     """
         Convert GMT Unix timestamp to local day, month, year
@@ -33,7 +34,7 @@ def convert_day_time(unix_time):
     return local_time
 
 
-#--------------------------- CONVERT TIME -----------------------------------#
+#--------------------------- CONVERT HOUR TIME -----------------------------------#
 def convert_hourly_time(time):
     """
         Convert GMT Unix time to local hourly time
@@ -120,4 +121,5 @@ def goodbye():
     """
         Print goodbye to user
     """
-    print(title("Good bye from Bill's Weather App!"))
+    print(title("Good bye from Bill's NWS Weather App!"))
+    sleep(2)

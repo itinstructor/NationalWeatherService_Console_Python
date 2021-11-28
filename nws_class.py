@@ -11,7 +11,7 @@ import requests
 import textwrap
 import os   # Clear the console
 import weather_utils
-# import geocode_owm for reverse geocode
+# Import geocode_geopy module for reverse geocode
 import geocode_geopy
 from datetime import datetime
 
@@ -28,9 +28,13 @@ class WeatherClass:
         """
             Get weather location and weather information
         """
-        # try:
         # Get location input from user
-        lat, lng, self.__address = geocode_geopy.geocode()
+        city = input("Enter city: ")
+        state = input("Enter state: ")
+        country = input("Enter country: ")
+        
+        # Get location input from user
+        lat, lng, self.__address = geocode_geopy.geocode(city, state, country)
         print(self.__address)
 
         # Get the gridpoints from lat and lng

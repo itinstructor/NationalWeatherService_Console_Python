@@ -7,6 +7,7 @@
 """
 # Openweather map url, api key, and other weather utilities
 import nws_class
+import weather_utils
 
 
 #-------------------------------- MENU -------------------------------------#
@@ -80,7 +81,7 @@ def main():
             weather.get_location()
 
     # Say goodbye to the user as the program exits
-    print("Good bye from the National Weather Service App")
+    weather_utils.goodbye()
 
 
 main()

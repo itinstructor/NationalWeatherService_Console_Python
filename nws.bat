@@ -1,2 +1,2 @@
-python .\nws_console.py
+python ./nws_console.py
 pause

@@ -19,16 +19,11 @@ def main():
     # reverse_geocode(LAT, LON)
 
 
-def geocode():
+def geocode(city, state, country):
     try:
         # Create geolocator object with Nominatim geocode service
         # Nominatim is a free geolocater that uses openstreetmaps.org
         geolocator = Nominatim(user_agent="location_practice")
-
-        # Get location input from user
-        city = input("Enter city: ")
-        state = input("Enter state: ")
-        country = input("Enter country: ")
 
         # Create location dictionary for request
         location = {
