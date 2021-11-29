@@ -28,108 +28,116 @@ class WeatherClass:
         """
             Get weather location and weather information
         """
-        # Get location input from user
-        city = input("Enter city: ")
-        state = input("Enter state: ")
-        country = input("Enter country: ")
-        
-        # Get location input from user
-        lat, lng, self.__address = geocode_geopy.geocode(city, state, country)
-        print(self.__address)
+        try:
+            # Get location input from user
+            city = input("Enter city: ")
+            state = input("Enter state: ")
+            country = input("Enter country: ")
+            
+            # Get location input from user
+            lat, lng, self.__address = geocode_geopy.geocode(city, state, country)
+            print(self.__address)
 
-        # Get the gridpoints from lat and lng
-        points_url = weather_utils.NWS_ENDPOINT + "/points/" + \
-            str(lat) + "," + str(lng)
+            # Get the gridpoints from lat and lng
+            points_url = weather_utils.NWS_ENDPOINT + "/points/" + \
+                str(lat) + "," + str(lng)
 
-        # Get the gridpoints response
-        response = requests.get(points_url, timeout=1)
+            # Get the gridpoints response
+            response = requests.get(points_url, timeout=1)
 
-        # Get gridpoints dictionary
-        if(response.status_code == 200):
-            print("[+] The connection to the National Weather Service was successful.")
-            # Get the gridpoints dictionary
-            grid_points_dict = response.json()
-            # \r return to the beginning of the line before printing
-            # , end="" Print on the same line
-            print(f"\r[+] [#      ]", end="")
+            # Get gridpoints dictionary
+            if(response.status_code == 200):
+                print("[+] The connection to the National Weather Service was successful.")
+                # Get the gridpoints dictionary
+                grid_points_dict = response.json()
+                # \r return to the beginning of the line before printing
+                # , end="" Print on the same line
+                print(f"\r[+] [#      ]", end="")
 
-            # Get the forecast url from the gridpoints dictionary
-            forecast_url = grid_points_dict.get("properties").get("forecast")
+                # Get the forecast url from the gridpoints dictionary
+                forecast_url = grid_points_dict.get("properties").get("forecast")
 
-            # station_url = grid_points.get("properties").get("observationStations")
-            response = requests.get(forecast_url, timeout=1)
-        else:
-            print("[-] Did not get NWS Gridpoints")
+                # station_url = grid_points.get("properties").get("observationStations")
+                response = requests.get(forecast_url, timeout=1)
+            else:
+                print("[-] Did not get NWS Gridpoints")
 
-        # Get 7 day forecast dictionary
-        if(response.status_code == 200):
-            # Get forecast dictionary
-            forecast_dict = response.json()
-            print(f"\r[+] [##     ]", end="")
-            self.forecast_list = forecast_dict.get("properties").get("periods")
+            # Get 7 day forecast dictionary
+            if(response.status_code == 200):
+                # Get forecast dictionary
+                forecast_dict = response.json()
+                print(f"\r[+] [##     ]", end="")
+                self.forecast_list = forecast_dict.get("properties").get("periods")
 
-            # Get observation station URL
-            forecast_hourly_url = grid_points_dict.get(
-                "properties").get("forecastHourly")
-            response = requests.get(forecast_hourly_url, timeout=1)
-        else:
-            print(
-                f"[-] Did not get NWS 7 Day Forecast - Response: {response.status_code}")
+                # Get observation station URL
+                forecast_hourly_url = grid_points_dict.get(
+                    "properties").get("forecastHourly")
+                response = requests.get(forecast_hourly_url, timeout=1)
+            else:
+                print(
+                    f"[-] Did not get NWS 7 Day Forecast - Response: {response.status_code}")
 
-        # Get hourly forecast
-        if(response.status_code == 200):
-            # Get forecast dictionary
-            forecast_hourly_dict = response.json()
-            print(f"\r[+] [###    ]", end="")
-            self.forecast_hourly_list = forecast_hourly_dict.get(
-                "properties").get("periods")
+            # Get hourly forecast
+            if(response.status_code == 200):
+                # Get forecast dictionary
+                forecast_hourly_dict = response.json()
+                print(f"\r[+] [###    ]", end="")
+                self.forecast_hourly_list = forecast_hourly_dict.get(
+                    "properties").get("periods")
 
-            # Get observation station URL
-            stations_url = grid_points_dict.get(
-                "properties").get("observationStations")
-            response = requests.get(stations_url, timeout=1)
-        else:
-            print(
-                f"[-] Did not get NWS Hourly Forecast - Response: {response.status_code}")
+                # Get observation station URL
+                stations_url = grid_points_dict.get(
+                    "properties").get("observationStations")
+                response = requests.get(stations_url, timeout=1)
+            else:
+                print(
+                    f"[-] Did not get NWS Hourly Forecast - Response: {response.status_code}")
 
-        # Get observation station ids
-        if(response.status_code == 200):
-            # Get station dictionary
-            self.station_dict = response.json()
-            print(f"\r[+] [####   ]", end="")
-            # Get first station id in list
-            self.station_id = self.station_dict.get("features")[0].get(
-                "properties").get("stationIdentifier")
+            # Get observation station ids
+            if(response.status_code == 200):
+                # Get station dictionary
+                self.station_dict = response.json()
+                print(f"\r[+] [####   ]", end="")
+                # Get first station id in list
+                self.station_id = self.station_dict.get("features")[0].get(
+                    "properties").get("stationIdentifier")
 
-            observations_url = weather_utils.NWS_ENDPOINT + \
-                "stations/" + self.station_id + "/observations/latest"
-            response = requests.get(observations_url, timeout=1)
-        else:
-            print(
-                f"[-] Did not get Station ID - - Response: {response.status_code}")
+                observations_url = weather_utils.NWS_ENDPOINT + \
+                    "stations/" + self.station_id + "/observations/latest"
+                response = requests.get(observations_url, timeout=1)
+            else:
+                print(
+                    f"[-] Did not get Station ID - - Response: {response.status_code}")
 
-        # Get latest observation from station
-        if(response.status_code == 200):
-            # Get latest observation dictionary
-            self.weather_dict = response.json()
-            print(f"\r[+] [#####  ]", end="")
-        else:
-            print(
-                f"[-] Did not get NWS latest weather observation - Response: {response.status_code}")
+            # Get latest observation from station
+            if(response.status_code == 200):
+                # Get latest observation dictionary
+                self.weather_dict = response.json()
+                print(f"\r[+] [#####  ]", end="")
+            else:
+                print(
+                    f"[-] Did not get NWS latest weather observation - Response: {response.status_code}")
 
-        # Get weather alerts for the area
-        if(response.status_code == 200):
-            alerts_url = f"https://api.weather.gov/alerts?point={lat},{lng}"
-            response = requests.get(alerts_url)
-            print(f"\r[+] [###### ]", end="")
-            self.alert_dict = response.json()
-            active_alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lng}"
-            response = requests.get(active_alerts_url, timeout=1)
-            print(f"\r[+] [#######]")
-            self.active_alert_dict = response.json()
-        else:
-            print(
-                f"[-] Did not get NWS Weather Alerts - Response: {response.status_code}")
+            # Get weather alerts for the area
+            if(response.status_code == 200):
+                alerts_url = f"https://api.weather.gov/alerts?point={lat},{lng}"
+                response = requests.get(alerts_url)
+                print(f"\r[+] [###### ]", end="")
+                self.alert_dict = response.json()
+                active_alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lng}"
+                response = requests.get(active_alerts_url, timeout=1)
+                print(f"\r[+] [#######]")
+                self.active_alert_dict = response.json()
+            else:
+                print(
+                    f"[-] Did not get NWS Weather Alerts - Response: {response.status_code}")
+        except Exception as e:
+            print("Something went wront. Let's try again")
+            print(e)
+            self.get_location()
+            # raise exception is used to troubleshooting
+            # It raises the exception that was handled
+            # raise exception
 
 #-------------------------- GET ACTIVE WEATHER ALERTS ----------------------------#
     def get_active_weather_alerts(self):
