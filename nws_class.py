@@ -14,7 +14,7 @@ import weather_utils
 # Import geocode_geopy module for reverse geocode
 import geocode_geopy
 from datetime import datetime
-
+from time import sleep
 
 class WeatherClass:
     def __init__(self):
@@ -28,6 +28,7 @@ class WeatherClass:
         """
             Get weather location and weather information
         """
+        PAUSE = 1
         try:
             # Get location input from user
             city = input("Enter city: ")
@@ -52,13 +53,14 @@ class WeatherClass:
                 grid_points_dict = response.json()
                 # \r return to the beginning of the line before printing
                 # , end="" Print on the same line
-                print(f"\r[+] [#      ]", end="")
+                print(f"\r[+] [##            ]", end="")
 
                 # Get the forecast url from the gridpoints dictionary
                 forecast_url = grid_points_dict.get("properties").get("forecast")
 
                 # station_url = grid_points.get("properties").get("observationStations")
                 response = requests.get(forecast_url, timeout=1)
+                sleep(PAUSE)
             else:
                 print("[-] Did not get NWS Gridpoints")
 
@@ -66,13 +68,14 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get forecast dictionary
                 forecast_dict = response.json()
-                print(f"\r[+] [##     ]", end="")
+                print(f"\r[+] [####          ]", end="")
                 self.forecast_list = forecast_dict.get("properties").get("periods")
 
                 # Get observation station URL
                 forecast_hourly_url = grid_points_dict.get(
                     "properties").get("forecastHourly")
                 response = requests.get(forecast_hourly_url, timeout=1)
+                sleep(PAUSE)
             else:
                 print(
                     f"[-] Did not get NWS 7 Day Forecast - Response: {response.status_code}")
@@ -81,7 +84,7 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get forecast dictionary
                 forecast_hourly_dict = response.json()
-                print(f"\r[+] [###    ]", end="")
+                print(f"\r[+] [######        ]", end="")
                 self.forecast_hourly_list = forecast_hourly_dict.get(
                     "properties").get("periods")
 
@@ -89,6 +92,7 @@ class WeatherClass:
                 stations_url = grid_points_dict.get(
                     "properties").get("observationStations")
                 response = requests.get(stations_url, timeout=1)
+                sleep(PAUSE)
             else:
                 print(
                     f"[-] Did not get NWS Hourly Forecast - Response: {response.status_code}")
@@ -97,7 +101,7 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get station dictionary
                 self.station_dict = response.json()
-                print(f"\r[+] [####   ]", end="")
+                print(f"\r[+] [########      ]", end="")
                 # Get first station id in list
                 self.station_id = self.station_dict.get("features")[0].get(
                     "properties").get("stationIdentifier")
@@ -105,6 +109,7 @@ class WeatherClass:
                 observations_url = weather_utils.NWS_ENDPOINT + \
                     "stations/" + self.station_id + "/observations/latest"
                 response = requests.get(observations_url, timeout=1)
+                sleep(PAUSE)
             else:
                 print(
                     f"[-] Did not get Station ID - - Response: {response.status_code}")
@@ -113,7 +118,8 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get latest observation dictionary
                 self.weather_dict = response.json()
-                print(f"\r[+] [#####  ]", end="")
+                print(f"\r[+] [##########    ]", end="")
+                sleep(PAUSE)
             else:
                 print(
                     f"[-] Did not get NWS latest weather observation - Response: {response.status_code}")
@@ -122,20 +128,23 @@ class WeatherClass:
             if(response.status_code == 200):
                 alerts_url = f"https://api.weather.gov/alerts?point={lat},{lng}"
                 response = requests.get(alerts_url)
-                print(f"\r[+] [###### ]", end="")
+                print(f"\r[+] [############  ]", end="")
                 self.alert_dict = response.json()
+                sleep(PAUSE)
+
                 active_alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lng}"
                 response = requests.get(active_alerts_url, timeout=1)
-                print(f"\r[+] [#######]")
+                print(f"\r[+] [##############]")
                 self.active_alert_dict = response.json()
+                sleep(PAUSE)
             else:
                 print(
                     f"[-] Did not get NWS Weather Alerts - Response: {response.status_code}")
         except Exception as e:
-            print("Something went wront. Let's try again")
+            print("Something went wrong. Let's try again")
             print(e)
             self.get_location()
-            # raise exception is used to troubleshooting
+            # raise exception is used to troubleshoot
             # It raises the exception that was handled
             # raise exception
 
