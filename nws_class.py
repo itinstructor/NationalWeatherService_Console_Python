@@ -53,7 +53,7 @@ class WeatherClass:
                 grid_points_dict = response.json()
                 # \r return to the beginning of the line before printing
                 # , end="" Print on the same line
-                print(f"\r[+] [##            ]", end="")
+                print(f"\r[+] Loading weather data [##            ]", end="")
 
                 # Get the forecast url from the gridpoints dictionary
                 forecast_url = grid_points_dict.get("properties").get("forecast")
@@ -68,7 +68,7 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get forecast dictionary
                 forecast_dict = response.json()
-                print(f"\r[+] [####          ]", end="")
+                print(f"\r[+] Loading weather data [####          ]", end="")
                 self.forecast_list = forecast_dict.get("properties").get("periods")
 
                 # Get observation station URL
@@ -84,7 +84,7 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get forecast dictionary
                 forecast_hourly_dict = response.json()
-                print(f"\r[+] [######        ]", end="")
+                print(f"\r[+] Loading weather data [######        ]", end="")
                 self.forecast_hourly_list = forecast_hourly_dict.get(
                     "properties").get("periods")
 
@@ -101,7 +101,7 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get station dictionary
                 self.station_dict = response.json()
-                print(f"\r[+] [########      ]", end="")
+                print(f"\r[+] Loading weather data [########      ]", end="")
                 # Get first station id in list
                 self.station_id = self.station_dict.get("features")[0].get(
                     "properties").get("stationIdentifier")
@@ -118,7 +118,7 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get latest observation dictionary
                 self.weather_dict = response.json()
-                print(f"\r[+] [##########    ]", end="")
+                print(f"\r[+] Loading weather data [##########    ]", end="")
                 sleep(PAUSE)
             else:
                 print(
@@ -128,13 +128,13 @@ class WeatherClass:
             if(response.status_code == 200):
                 alerts_url = f"https://api.weather.gov/alerts?point={lat},{lng}"
                 response = requests.get(alerts_url)
-                print(f"\r[+] [############  ]", end="")
+                print(f"\r[+] Loading weather data [############  ]", end="")
                 self.alert_dict = response.json()
                 sleep(PAUSE)
 
                 active_alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lng}"
                 response = requests.get(active_alerts_url, timeout=1)
-                print(f"\r[+] [##############]")
+                print(f"\r[+] Loading weather data [##############]")
                 self.active_alert_dict = response.json()
                 sleep(PAUSE)
             else:
