@@ -1,4 +1,4 @@
-# National Weather Service Python3 Console Application
+# National Weather Service Console Application in Python
 
 ### Overview
 - Python3 console program using requests, National Weather Service API and Nominatim from geopy.
