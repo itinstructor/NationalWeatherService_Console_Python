@@ -114,12 +114,3 @@ def title(statement):
 
     # Return the contatenated title string
     return result
-
-
-#-------------------------- GOODBYE ----------------------------#
-def goodbye():
-    """
-        Print goodbye to user
-    """
-    print(title("Good bye from Bill's NWS Weather App!"))
-    sleep(2)

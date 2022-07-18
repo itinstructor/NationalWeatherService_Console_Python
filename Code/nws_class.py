@@ -1,9 +1,10 @@
 """
-    Name: one_call_class.py
+    Name: nws_class.py
     Author:
-    Created:
+    Revised: 07/17/22
     Purpose: OOP class for National Weather Service weather
     Get lat and lon from geocode
+    Separate out API calls into separate methods.
 """
 
 import requests
@@ -26,6 +27,7 @@ from rich.panel import Panel
 # Initialize rich.console
 console = Console()
 
+
 class WeatherClass:
     def __init__(self):
         """ Initialize object """
@@ -34,31 +36,43 @@ class WeatherClass:
             "    National Weather Service App    ",
             style="bold blue",
             subtitle="By William Loring"
-            ))
+        ))
         self._decorator_width = 75
 
 #--------------------------------- GET LOCATION -------------------------------------#
     def get_location(self):
         """
-            Get weather location and weather information
+            Get lat, lng, and address to retrieve weather for
         """
-        # Pause for 1 second between data requests
-        # Otherwise the server may not respond
-        PAUSE_BETWEEN_REQUESTS = 1
         try:
             # Get location input from user
             city = input("Enter city: ")
             state = input("Enter state: ")
             country = input("Enter country: ")
 
-            # Get location from geopy
-            lat, lng, self._address = geocode_geopy.geocode(
+            # Get location lat, lng and addressfrom geopy
+            self.lat, self.lng, self._address = geocode_geopy.geocode(
                 city, state, country)
             print(self._address)
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            self.get_location()
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
 
-            # Get the gridpoints from lat and lng
+#--------------------------------- GET GRIDPOINTs -------------------------------------#
+    def get_gridpoints(self):
+        """
+            Gridpoints are how the NWS locates the weather 
+            lat, lng are translated into gridpoints
+            gridpoints allow us to get the weather for the current location
+        """
+        try:
+            # Create url from lat and lng to get gridpoints
             points_url = weather_utils.NWS_ENDPOINT + "/points/" + \
-                str(lat) + "," + str(lng)
+                str(self.lat) + "," + str(self.lng)
 
             # Get the gridpoints response
             response = requests.get(points_url, timeout=5)
@@ -68,68 +82,45 @@ class WeatherClass:
                 print(
                     "[+] The connection to the National Weather Service was successful.")
                 # Get the gridpoints dictionary for weather station locations
-                grid_points_dict = response.json()
-                # \r return to the beginning of the line before printing
-                # , end="" Print on the same line
-                print(f"\r[+] Loading weather data [##            ]", end="")
+                self.grid_points_dict = response.json()
+                print(
+                    f"\r[+] Retrieved NWS Gridpoints for Weather Station Location")
 
-                # Get the forecast url from the gridpoints dictionary
-                forecast_url = grid_points_dict.get(
-                    "properties").get("forecast")
-
-                # station_url = grid_points.get("properties").get("observationStations")
-                response = requests.get(forecast_url, timeout=5)
-                sleep(PAUSE_BETWEEN_REQUESTS)
             else:
                 print("[-] Did not get NWS Gridpoints")
 
-            # Get 7 Day forecast dictionary
-            if(response.status_code == 200):
-                # Get forecast dictionary
-                forecast_dict = response.json()
-                print(f"\r[+] Loading weather data [####          ]", end="")
-                self.forecast_list = forecast_dict.get(
-                    "properties").get("periods")
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            self.get_location()
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
 
-                # Get hourly forecast from grid_points dictionary retrieved in the first step
-                forecast_hourly_url = grid_points_dict.get(
-                    "properties").get("forecastHourly")
-                response = requests.get(forecast_hourly_url, timeout=5)
-                sleep(PAUSE_BETWEEN_REQUESTS)
-            else:
-                print(
-                    f"[-] Did not get NWS 7 Day Forecast - Response: {response.status_code}")
-
-            # Get hourly forecast
-            if(response.status_code == 200):
-                # Get forecast dictionary
-                forecast_hourly_dict = response.json()
-                print(f"\r[+] Loading weather data [######        ]", end="")
-                self.forecast_hourly_list = forecast_hourly_dict.get(
-                    "properties").get("periods")
-
-                # Get observation station URL
-                stations_url = grid_points_dict.get(
-                    "properties").get("observationStations")
-                response = requests.get(stations_url, timeout=5)
-                sleep(PAUSE_BETWEEN_REQUESTS)
-            else:
-                print(
-                    f"[-] Did not get NWS Hourly Forecast - Response: {response.status_code}")
+#--------------------------------- GET LATEST WEATHER OBSERVATION -------------------------------------#
+    def get_latest_weather_observation(self):
+        """
+            Get latest weather observation from closest station
+        """
+        try:
+            # Get closest observation station URL from grid_points dictionary
+            stations_url = self.grid_points_dict.get(
+                "properties").get("observationStations")
+            response = requests.get(stations_url, timeout=5)
 
             # Get observation station ids
             if(response.status_code == 200):
                 # Get station dictionary
                 self.station_dict = response.json()
-                print(f"\r[+] Loading weather data [########      ]", end="")
+
                 # Get first station id in list
                 self.station_id = self.station_dict.get("features")[0].get(
                     "properties").get("stationIdentifier")
 
+                # Create URL from station id
                 observations_url = weather_utils.NWS_ENDPOINT + \
                     "stations/" + self.station_id + "/observations/latest"
                 response = requests.get(observations_url, timeout=5)
-                sleep(PAUSE_BETWEEN_REQUESTS)
             else:
                 print(
                     f"[-] Did not get Station ID - - Response: {response.status_code}")
@@ -138,25 +129,104 @@ class WeatherClass:
             if(response.status_code == 200):
                 # Get latest observation dictionary
                 self.weather_dict = response.json()
-                print(f"\r[+] Loading weather data [##########    ]", end="")
-                sleep(PAUSE_BETWEEN_REQUESTS)
             else:
                 print(
-                    f"[-] Did not get NWS latest weather observation - Response: {response.status_code}")
+                    f"[-] Did not get NWS latest weather observation \
+                        - Response: {response.status_code}")
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            self.get_location()
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
 
-            # Get weather alerts for the area
+ #------------------------------------- GET HOURLY FORECAST ----------------------------------------#
+    def get_hourly_forecast(self):
+        """
+           Get hourly forecast url from grid_points dictionary
+        """
+        try:
+            forecast_hourly_url = self.grid_points_dict.get(
+                "properties").get("forecastHourly")
+            response = requests.get(forecast_hourly_url, timeout=5)
+
             if(response.status_code == 200):
-                alerts_url = f"https://api.weather.gov/alerts?point={lat},{lng}"
-                response = requests.get(alerts_url)
-                print(f"\r[+] Loading weather data [############  ]", end="")
-                self.alert_dict = response.json()
-                sleep(PAUSE_BETWEEN_REQUESTS)
+                # Get forecast dictionary
+                forecast_hourly_dict = response.json()
+                self.forecast_hourly_list = forecast_hourly_dict.get(
+                    "properties").get("periods")
+            else:
+                print(
+                    f"[-] Did not get NWS Hourly Forecast - Response: {response.status_code}")
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            self.get_location()
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
 
-                active_alerts_url = f"https://api.weather.gov/alerts/active?point={lat},{lng}"
-                response = requests.get(active_alerts_url, timeout=5)
-                print(f"\r[+] Loading weather data [##############]")
-                self.active_alert_dict = response.json()
-                sleep(PAUSE_BETWEEN_REQUESTS)
+#--------------------------------- GET 7 DAY FORECAST -------------------------------------#
+    def get_7_day_forecast(self):
+        """
+            Get 7 Day forecast from grid_points dictionary
+        """
+        try:
+            # Get the forecast url from the gridpoints dictionary
+            forecast_url = self.grid_points_dict.get(
+                "properties").get("forecast")
+
+            response = requests.get(forecast_url, timeout=5)
+
+            if(response.status_code == 200):
+                # Get forecast dictionary
+                forecast_dict = response.json()
+                self.forecast_list = forecast_dict.get(
+                    "properties").get("periods")
+            else:
+                print(
+                    f"[-] Did not get NWS 7 Day Forecast - Response: {response.status_code}")
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            self.get_location()
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
+
+#--------------------------------- GET ACTIVE WEATHER ALERTS ----------------------------#
+    def get_active_weather_alerts(self):
+        """
+            Get active weather alerts for the area
+        """
+        try:
+            active_alerts_url = f"https://api.weather.gov/alerts/active?point={self.lat},{self.lng}"
+            response = requests.get(active_alerts_url, timeout=5)
+            if(response.status_code == 200):
+                self.active_weather_alert_dict = response.json()
+            else:
+                print(
+                    f"[-] Did not get NWS Active Weather Alerts - Response: {response.status_code}")
+
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            self.get_location()
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
+
+#--------------------------------- GET WEATHER ALERTS ----------------------------#
+    def get_weather_alerts(self):
+        """
+            Get weather alerts for the area
+        """
+        try:
+            alerts_url = f"https://api.weather.gov/alerts?point={self.lat},{self.lng}"
+            response = requests.get(alerts_url)
+            if(response.status_code == 200):
+                self.weather_alert_dict = response.json()
             else:
                 print(
                     f"[-] Did not get NWS Weather Alerts - Response: {response.status_code}")
@@ -168,15 +238,17 @@ class WeatherClass:
             # It raises the exception that was handled
             # raise exception
 
-#-------------------------- GET ACTIVE WEATHER ALERTS ----------------------------#
-    def get_active_weather_alerts(self):
-        """ Get weather alerts  """
+#-------------------------- DISPLAY ACTIVE WEATHER ALERTS ----------------------------#
+    def display_active_weather_alerts(self):
+        """
+            Display active weather alerts
+        """
         print("="*self._decorator_width)
         print(f"National Weather Service Active Weather Alerts")
         print(f"{self._address}")
         print("="*self._decorator_width)
         # print(self.alert_dict.get("features")[0].get("properties").get("areaDesc"))
-        active_alert_list = self.active_alert_dict.get("features")[:]
+        active_alert_list = self.active_weather_alert_dict.get("features")[:]
 
         # If active weather alert list is not empty
         if active_alert_list != []:
@@ -209,15 +281,15 @@ class WeatherClass:
         else:
             print("No active weather alerts at this time.")
 
-#-------------------------- GET WEATHER ALERTS ----------------------------#
-    def get_weather_alerts(self):
+#-------------------------- DISPLAY WEATHER ALERTS ----------------------------#
+    def display_weather_alerts(self):
         """ Get weather alerts  """
         print("="*self._decorator_width)
         print(f"National Weather Service Weather Alerts")
         print(f"{self._address}")
         print("="*self._decorator_width)
         # print(self.alert_dict.get("features")[0].get("properties").get("areaDesc"))
-        alert_list = self.alert_dict.get("features")[:]
+        alert_list = self.weather_alert_dict.get("features")[:]
 
         # If weather alert list is not empty
         if alert_list != []:
@@ -250,8 +322,8 @@ class WeatherClass:
         else:
             print("No weather alerts at this time.")
 
-#-------------------------- GET 12 HOUR FORECAST ----------------------------#
-    def get_twelve_hour_forecast(self):
+#-------------------------- DISPLAY 12 HOUR FORECAST ----------------------------#
+    def display_twelve_hour_forecast(self):
         """ Get hourly forecast """
         print("="*self._decorator_width)
         print(
@@ -272,8 +344,8 @@ class WeatherClass:
             print(
                 f"{time:>8}: {temperature:>5.1f}°F | {wind_speed:>8} | {wind_direction:>5} | {short_forecast}")
 
-#-------------------------- GET LATEST WEATHER OBSERVATION ----------------------------#
-    def get_weather(self):
+#-------------------------- PROCESS LATEST WEATHER OBSERVATION ----------------------------#
+    def process_latest_weather(self):
         """
             Get latest observation from the closest NWS station 
         """
@@ -358,7 +430,10 @@ class WeatherClass:
             self._elevation = "NA"
 
 #-------------------------- DISPLAY LATEST WEATHER OBSERVATION ----------------------------#
-    def display_weather(self):
+    def display_latest_weather_observation(self):
+        """
+            Display latest weather observation from closest station
+        """
         WIDTH = 15
         print("="*self._decorator_width)
         print(f"National Weather Service Latest Weather Observations")
@@ -374,11 +449,11 @@ class WeatherClass:
         print(f"{'Pressure:':{WIDTH}} {self._pressure} inHg")
         print(f"{'Visibility:':{WIDTH}} {self._visibility} mi")
         print(
-            f"{'WindChill:':{WIDTH}} {self._windchill}°F         {'Heat Index:'} {self._heatindex}°F")
+            f"{'Wind Chill:':{WIDTH}} {self._windchill}°F         {'Heat Index:'} {self._heatindex}°F")
         print(f"{'Elevation:':{WIDTH}} {self._elevation} feet")
 
-#-------------------------- GET 7 DAY FORECAST ----------------------------#
-    def get_forecast(self):
+#-------------------------- DISPLAY 7 DAY FORECAST ----------------------------#
+    def display_7_day_forecast(self):
         print("="*self._decorator_width)
         print(
             f"National Weather Service 7 Day Weather Forecast")
@@ -398,10 +473,11 @@ class WeatherClass:
             # time = time.strftime('%m-%d-%Y')
             # print(f"{name}: {detailed_forecast}")
             print(
-                f"{name:<15} {temperature:>4}°F | {wind_speed:12} {wind_direction:5} | {short_forecast}")
+                f"{name:<15} {temperature:>4}°F |\
+                     {wind_speed:12} {wind_direction:5} | {short_forecast}")
             # print(f'{detailed_forecast}')
 
-#-------------------------- GET 7 DAY DETAILED FORECAST ----------------------------#
+#-------------------------- DISPLAY 7 DAY DETAILED FORECAST ----------------------------#
     def get_detailed_forecast(self):
         print("="*self._decorator_width)
         print(
@@ -431,7 +507,18 @@ class WeatherClass:
                 self.clear_console()
                 # print("="*self.__decorator_width)
 
+#--------------------------------- GOODBYE --------------------------------#
+    def goodbye(self):
+        """
+            Print goodbye to user
+        """
+        console.print(Panel.fit(
+            "    Good bye from Bill's NWS Weather App!    ",
+            style="bold blue"
+        ))
+        sleep(2)
+
 #-------------------------- CLEAR CONSOLE ----------------------------#
     def clear_console(self):
         # Clear the console for Windows 'cls' or Linux 'clear'
-        os.system('cls' if os.name == 'nt' else 'clear')
+        os.system("cls" if os.name == "nt" else "clear")
