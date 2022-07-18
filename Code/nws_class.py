@@ -345,7 +345,7 @@ class WeatherClass:
                 f"{time:>8}: {temperature:>5.1f}°F | {wind_speed:>8} | {wind_direction:>5} | {short_forecast}")
 
 #-------------------------- PROCESS LATEST WEATHER OBSERVATION ----------------------------#
-    def process_latest_weather(self):
+    def process_latest_weather_observation(self):
         """
             Get latest observation from the closest NWS station 
         """
@@ -473,12 +473,11 @@ class WeatherClass:
             # time = time.strftime('%m-%d-%Y')
             # print(f"{name}: {detailed_forecast}")
             print(
-                f"{name:<15} {temperature:>4}°F |\
-                     {wind_speed:12} {wind_direction:5} | {short_forecast}")
+                f"{name:<15} {temperature:>4}°F | {wind_speed:12} {wind_direction:5} | {short_forecast}")
             # print(f'{detailed_forecast}')
 
 #-------------------------- DISPLAY 7 DAY DETAILED FORECAST ----------------------------#
-    def get_detailed_forecast(self):
+    def display_7_day_detailed_forecast(self):
         print("="*self._decorator_width)
         print(
             f"National Weather Service 7 Day Weather Forecast")

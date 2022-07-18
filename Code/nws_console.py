@@ -9,6 +9,8 @@
 import nws_class
 
 #-------------------------------- MENU -------------------------------------#
+
+
 def menu():
     """
         Print menu for user, return menu choice
@@ -27,7 +29,6 @@ def menu():
 
 #-------------------------- MAIN PROGRAM ----------------------------#
 def main():
-
     # Create weather object
     weather = nws_class.WeatherClass()
     # Get the location from the user
@@ -47,7 +48,7 @@ def main():
         elif menu_choice == "1":
             weather.clear_console()
             weather.get_latest_weather_observation()
-            weather.process_latest_weather()
+            weather.process_latest_weather_observation()
             weather.display_latest_weather_observation()
 
         # Get 12 hour forecast
@@ -65,7 +66,8 @@ def main():
         # Get and display 7 day detailed forecast
         elif menu_choice == "4":
             weather.clear_console()
-            weather.get_detailed_forecast()
+            weather.get_7_day_forecast()
+            weather.display_7_day_detailed_forecast()
 
         # Get and display active weather alerts
         elif menu_choice == "5":
