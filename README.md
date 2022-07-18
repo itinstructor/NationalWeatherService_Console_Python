@@ -1,15 +1,18 @@
 # National Weather Service Console Application in Python
 
 ### Overview
-- Python3 console program using requests, National Weather Service API and Nominatim from geopy.
-- Includes current, forecast weather, and weather alerts.
-- The lat and long are retrieved using Nominatim from geopy.
+- Python3 console program using requests, National Weather Service API, and Nominatim from geopy.
+- Includes current observations, forecast weather, and weather alerts.
+- Latitude and longitude are retrieved using Nominatim from geopy.
+    - Windows: pip install geopy
+    - LInux: pip3 install geopy
 - JSON sample response files used to build the program are in the json_response_files folder.
-- A batch file is included for using nuitka to build to a Windows exe (nuitka_console.bat)
-    * Install nuitka: pip install nuitka
+- A batch file is included for using nuitka to build to a Windows exe (nuitka_console.bat) 
+    - Windows: pip install nuitka
+    - Linux: pip3 install nuitka
 
 ### Changes
-- 07/17/2022: Instead of getting all the weather data at once from successive API calls, API call's are only made when needed
+- 07/17/2022: Instead of getting all the weather data at once from successive API calls, API call's are only made when needed, added more exception handling
 - 11/28/2021: Make nws_class less console specific to be able to be used in any other programs
 - 09/17/2021: Initial commit
 

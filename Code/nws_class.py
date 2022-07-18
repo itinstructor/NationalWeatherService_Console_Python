@@ -4,10 +4,8 @@
     Revised: 07/17/22
     Purpose: OOP class for National Weather Service weather
     Get lat and lon from geocode
-    Separate out API calls into separate methods.
+    Separate out API calls into separate methods
 """
-
-import requests
 # Control textwrapping in the console
 import textwrap
 # os.system call to clear the console for Windows 'cls' or Linux 'clear'
@@ -17,13 +15,16 @@ import weather_utils
 import geocode_geopy
 from datetime import datetime
 from time import sleep
+
+# pip install requests
+import requests
+
 # Windows: pip install rich
 # Linux: pip3 install rich
 # Import Console for console printing
 from rich.console import Console
 # Import Panel for title displays
 from rich.panel import Panel
-
 # Initialize rich.console
 console = Console()
 
