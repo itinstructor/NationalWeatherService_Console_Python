@@ -5,7 +5,8 @@
     Purpose: Geocode using Nominatim from geopy
 """
 
-# pip install geopy
+# Windows: pip install geopy
+# Linux: pip3 install geopy
 from geopy.geocoders import Nominatim
 
 

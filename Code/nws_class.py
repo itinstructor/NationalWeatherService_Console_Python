@@ -4,8 +4,10 @@
     Revised: 07/17/22
     Purpose: OOP class for National Weather Service weather
     Get lat and lon from geocode
-    Separate out API calls into separate methods
+    Separate out API calls into separate methods.
 """
+
+import requests
 # Control textwrapping in the console
 import textwrap
 # os.system call to clear the console for Windows 'cls' or Linux 'clear'
@@ -15,16 +17,13 @@ import weather_utils
 import geocode_geopy
 from datetime import datetime
 from time import sleep
-
-# pip install requests
-import requests
-
 # Windows: pip install rich
 # Linux: pip3 install rich
 # Import Console for console printing
 from rich.console import Console
 # Import Panel for title displays
 from rich.panel import Panel
+
 # Initialize rich.console
 console = Console()
 
@@ -40,6 +39,12 @@ class WeatherClass:
         ))
         self._decorator_width = 75
 
+        # User agent headers dictionary, like an API key
+        # Required by NWS
+        self.headers = {
+            "User-Agent": "(nws_app, williamloring@hotmail.com)"
+        }
+
 #--------------------------------- GET LOCATION -------------------------------------#
     def get_location(self):
         """
@@ -49,11 +54,11 @@ class WeatherClass:
             # Get location input from user
             city = input("Enter city: ")
             state = input("Enter state: ")
-            country = input("Enter country: ")
 
-            # Get location lat, lng and addressfrom geopy
+            # Get location lat, lng and address from geopy
+            # NWS is US only
             self.lat, self.lng, self._address = geocode_geopy.geocode(
-                city, state, country)
+                city, state, country="")
             print(self._address)
         except Exception as e:
             print("Something went wrong. Let's try again")
@@ -62,6 +67,7 @@ class WeatherClass:
             # raise exception is used to troubleshoot
             # It raises the exception that was handled
             # raise exception
+        self.get_gridpoints()
 
 #--------------------------------- GET GRIDPOINTs -------------------------------------#
     def get_gridpoints(self):
@@ -76,7 +82,7 @@ class WeatherClass:
                 str(self.lat) + "," + str(self.lng)
 
             # Get the gridpoints response
-            response = requests.get(points_url, timeout=5)
+            response = requests.get(points_url, headers=self.headers)
 
             # Get gridpoints dictionary, locations for weather station coverage
             if(response.status_code == 200):
@@ -107,7 +113,7 @@ class WeatherClass:
             # Get closest observation station URL from grid_points dictionary
             stations_url = self.grid_points_dict.get(
                 "properties").get("observationStations")
-            response = requests.get(stations_url, timeout=5)
+            response = requests.get(stations_url, headers=self.headers)
 
             # Get observation station ids
             if(response.status_code == 200):
@@ -121,7 +127,7 @@ class WeatherClass:
                 # Create URL from station id
                 observations_url = weather_utils.NWS_ENDPOINT + \
                     "stations/" + self.station_id + "/observations/latest"
-                response = requests.get(observations_url, timeout=5)
+                response = requests.get(observations_url, headers=self.headers)
             else:
                 print(
                     f"[-] Did not get Station ID - - Response: {response.status_code}")
@@ -150,7 +156,7 @@ class WeatherClass:
         try:
             forecast_hourly_url = self.grid_points_dict.get(
                 "properties").get("forecastHourly")
-            response = requests.get(forecast_hourly_url, timeout=5)
+            response = requests.get(forecast_hourly_url, headers=self.headers)
 
             if(response.status_code == 200):
                 # Get forecast dictionary
@@ -178,7 +184,7 @@ class WeatherClass:
             forecast_url = self.grid_points_dict.get(
                 "properties").get("forecast")
 
-            response = requests.get(forecast_url, timeout=5)
+            response = requests.get(forecast_url, headers=self.headers)
 
             if(response.status_code == 200):
                 # Get forecast dictionary
@@ -203,7 +209,7 @@ class WeatherClass:
         """
         try:
             active_alerts_url = f"https://api.weather.gov/alerts/active?point={self.lat},{self.lng}"
-            response = requests.get(active_alerts_url, timeout=5)
+            response = requests.get(active_alerts_url, headers=self.headers)
             if(response.status_code == 200):
                 self.active_weather_alert_dict = response.json()
             else:
@@ -225,7 +231,7 @@ class WeatherClass:
         """
         try:
             alerts_url = f"https://api.weather.gov/alerts?point={self.lat},{self.lng}"
-            response = requests.get(alerts_url)
+            response = requests.get(alerts_url, headers=self.headers)
             if(response.status_code == 200):
                 self.weather_alert_dict = response.json()
             else:
@@ -365,8 +371,11 @@ class WeatherClass:
         self._description = weather_obs.get("textDescription")
 
         temperature = weather_obs.get("temperature").get("value")
-        self._temperature = weather_utils.celsius_to_fahrenheit(temperature)
-
+        if not (temperature is None):
+            self._temperature = weather_utils.celsius_to_fahrenheit(temperature)
+        else:
+            self._temperature = "NA"
+        
         dewpoint = weather_obs.get("dewpoint").get("value")
         if not (dewpoint is None):
             self._dewpoint = round(dewpoint, 1)
@@ -382,7 +391,7 @@ class WeatherClass:
         wind_speed = weather_obs.get("windSpeed").get("value")
         if not (wind_speed is None):
             # Convert kph to mph
-            self._wind_speed = round(wind_speed * .62137, 1)
+            self._wind_speed = round(wind_speed * .621371, 1)
         else:
             self._wind_speed = "NA"
 
@@ -446,11 +455,13 @@ class WeatherClass:
         print(f"{'Dew Point:':{WIDTH}} {self._dewpoint}°F")
         print(f"{'Humidity:':{WIDTH}} {self._humidity}%")
         print(
-            f"{'Wind:':{WIDTH}} {self._wind_speed} mph  {self._degree}°  {self._wind_cardinal}")
+            f"{'Wind Direction:':{WIDTH}} {self._degree}°  {self._wind_cardinal}")
+        print(
+            f"{'Wind Speed:':{WIDTH}} {self._wind_speed} mph")
         print(f"{'Pressure:':{WIDTH}} {self._pressure} inHg")
         print(f"{'Visibility:':{WIDTH}} {self._visibility} mi")
-        print(
-            f"{'Wind Chill:':{WIDTH}} {self._windchill}°F         {'Heat Index:'} {self._heatindex}°F")
+        print(f"{'Wind Chill:':{WIDTH}} {self._windchill}°F")
+        print(f"{'Heat Index:':{WIDTH}} {self._heatindex}°F")
         print(f"{'Elevation:':{WIDTH}} {self._elevation} feet")
 
 #-------------------------- DISPLAY 7 DAY FORECAST ----------------------------#

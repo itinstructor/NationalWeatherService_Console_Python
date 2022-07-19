@@ -33,7 +33,6 @@ def main():
     weather = nws_class.WeatherClass()
     # Get the location from the user
     weather.get_location()
-    weather.get_gridpoints()
     # Menu loop
     while True:
         # Display menu choices
