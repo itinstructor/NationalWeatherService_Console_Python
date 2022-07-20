@@ -23,6 +23,7 @@ from time import sleep
 from rich.console import Console
 # Import Panel for title displays
 from rich.panel import Panel
+from rich.table import Table
 
 # Initialize rich.console
 console = Console()
@@ -72,7 +73,7 @@ class WeatherClass:
 #--------------------------------- GET GRIDPOINTs -------------------------------------#
     def get_gridpoints(self):
         """
-            Gridpoints are how the NWS locates the weather 
+            Gridpoints are how the NWS locates the weather
             lat, lng are translated into gridpoints
             gridpoints allow us to get the weather for the current location
         """
@@ -250,10 +251,11 @@ class WeatherClass:
         """
             Display active weather alerts
         """
-        print("="*self._decorator_width)
-        print(f"National Weather Service Active Weather Alerts")
-        print(f"{self._address}")
-        print("="*self._decorator_width)
+        console.print(Panel.fit(
+            f"National Weather Service Active Weather Alerts\n{self._address}",
+            style="bold blue"
+        ))
+
         # print(self.alert_dict.get("features")[0].get("properties").get("areaDesc"))
         active_alert_list = self.active_weather_alert_dict.get("features")[:]
 
@@ -290,11 +292,14 @@ class WeatherClass:
 
 #-------------------------- DISPLAY WEATHER ALERTS ----------------------------#
     def display_weather_alerts(self):
-        """ Get weather alerts  """
-        print("="*self._decorator_width)
-        print(f"National Weather Service Weather Alerts")
-        print(f"{self._address}")
-        print("="*self._decorator_width)
+        """
+            Display weather alerts
+        """
+        console.print(Panel.fit(
+            f"National Weather Service Weather Alerts\n{self._address}",
+            style="bold blue"
+        ))
+
         # print(self.alert_dict.get("features")[0].get("properties").get("areaDesc"))
         alert_list = self.weather_alert_dict.get("features")[:]
 
@@ -329,32 +334,10 @@ class WeatherClass:
         else:
             print("No weather alerts at this time.")
 
-#-------------------------- DISPLAY 12 HOUR FORECAST ----------------------------#
-    def display_twelve_hour_forecast(self):
-        """ Get hourly forecast """
-        print("="*self._decorator_width)
-        print(
-            f"National Weather Service 12 Hour Weather Forecast")
-        print(f"{self._address}")
-        print("="*self._decorator_width)
-        # Slice 12 hours out of the hourly forecast list
-        hourly_slice = self.forecast_hourly_list[:12]
-        # Iterate through each item in the forecast list
-        for forecast_item in hourly_slice:
-            start_time = forecast_item.get("startTime")
-            temperature = forecast_item.get("temperature")
-            wind_speed = forecast_item.get("windSpeed")
-            wind_direction = forecast_item.get("windDirection")
-            short_forecast = forecast_item.get("shortForecast")
-            time = datetime.fromisoformat(start_time)
-            time = time.strftime('%I:%M %p')
-            print(
-                f"{time:>8}: {temperature:>5.1f}°F | {wind_speed:>8} | {wind_direction:>5} | {short_forecast}")
-
 #-------------------------- PROCESS LATEST WEATHER OBSERVATION ----------------------------#
     def process_latest_weather_observation(self):
         """
-            Get latest observation from the closest NWS station 
+            Get latest observation from the closest NWS station
         """
         # Get nearest stationid
         self.station_name = self.station_dict.get(
@@ -368,14 +351,19 @@ class WeatherClass:
         timestamp = datetime.fromisoformat(timestamp)
         self._timestamp = timestamp.strftime("%m/%d/%Y, %I:%M %p")
 
-        self._description = weather_obs.get("textDescription")
+        description = weather_obs.get("textDescription")
+        if not (description is None):
+            self._description = description
+        else:
+            self._description = "NA"
 
         temperature = weather_obs.get("temperature").get("value")
         if not (temperature is None):
-            self._temperature = weather_utils.celsius_to_fahrenheit(temperature)
+            self._temperature = weather_utils.celsius_to_fahrenheit(
+                temperature)
         else:
             self._temperature = "NA"
-        
+
         dewpoint = weather_obs.get("dewpoint").get("value")
         if not (dewpoint is None):
             self._dewpoint = round(dewpoint, 1)
@@ -442,59 +430,103 @@ class WeatherClass:
 #-------------------------- DISPLAY LATEST WEATHER OBSERVATION ----------------------------#
     def display_latest_weather_observation(self):
         """
-            Display latest weather observation from closest station
+            Display latest weather observation from closest station in Rich table format
         """
-        WIDTH = 15
-        print("="*self._decorator_width)
-        print(f"National Weather Service Latest Weather Observations")
-        print(
-            f"Station: {self.station_id} {self.station_name} {self._timestamp}")
-        print("="*self._decorator_width)
-        print(f"{self._description}")
-        print(f"{'Temperature:':{WIDTH}} {self._temperature}°F")
-        print(f"{'Dew Point:':{WIDTH}} {self._dewpoint}°F")
-        print(f"{'Humidity:':{WIDTH}} {self._humidity}%")
-        print(
-            f"{'Wind Direction:':{WIDTH}} {self._degree}°  {self._wind_cardinal}")
-        print(
-            f"{'Wind Speed:':{WIDTH}} {self._wind_speed} mph")
-        print(f"{'Pressure:':{WIDTH}} {self._pressure} inHg")
-        print(f"{'Visibility:':{WIDTH}} {self._visibility} mi")
-        print(f"{'Wind Chill:':{WIDTH}} {self._windchill}°F")
-        print(f"{'Heat Index:':{WIDTH}} {self._heatindex}°F")
-        print(f"{'Elevation:':{WIDTH}} {self._elevation} feet")
+        console.print(Panel.fit(
+            f"National Weather Service Latest Observations\n{self._address}",
+            style="bold blue"
+        ))
+        table = Table()
+        table.add_column("Desc", justify="right")
+        table.add_column("Value")
+        table.add_column("Desc", justify="right")
+        table.add_column("Value")
+        table.add_row(f"{self._description}", "")
+        table.add_row(
+            "Temperature ", f"{self._temperature}°F", "Pressure", f"{self._pressure} inHg")
+        table.add_row("Dew Point", f"{self._dewpoint}°F",
+                      "Visibility", f"{self._visibility} mi")
+        table.add_row("Humidity", f"{self._humidity}%",
+                      "Wind Chill",  f"{self._windchill}°F")
+        table.add_row(
+            "Wind Direction",  f"{self._degree}°  {self._wind_cardinal}", "Heat Index", f"{self._heatindex}°F")
+        table.add_row(
+            "Wind Speed", f"{self._wind_speed} mph", "Elevation", f"{self._elevation} feet")
+
+        console.print(table)
+
+#-------------------------- DISPLAY 12 HOUR FORECAST ----------------------------#
+    def display_twelve_hour_forecast(self):
+        """
+            Display 12 hour forecast
+        """
+        console.print(Panel.fit(
+            f"National Weather Service 12 Hour Forecast\n{self._address}",
+            style="bold blue"
+        ))
+
+        try:
+            # Slice 12 hours out of the hourly forecast list
+            hourly_slice = self.forecast_hourly_list[:12]
+            # Iterate through each item in the forecast list
+            for forecast_item in hourly_slice:
+                start_time = forecast_item.get("startTime")
+                temperature = forecast_item.get("temperature")
+                wind_speed = forecast_item.get("windSpeed")
+                wind_direction = forecast_item.get("windDirection")
+                short_forecast = forecast_item.get("shortForecast")
+                time = datetime.fromisoformat(start_time)
+                time = time.strftime('%I:%M %p')
+                print(
+                    f"{time:>8}: {temperature:>5.1f}°F | {wind_speed:>8} | {wind_direction:>5} | {short_forecast}")
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
 
 #-------------------------- DISPLAY 7 DAY FORECAST ----------------------------#
     def display_7_day_forecast(self):
-        print("="*self._decorator_width)
-        print(
-            f"National Weather Service 7 Day Weather Forecast")
-        print(f"{self._address}")
-        print("="*self._decorator_width)
+        """
+            Display 7 day forecast
+        """
+        console.print(Panel.fit(
+            f"National Weather Service 7 Day Forecast\n{self._address}"),
+            style="bold blue"
+        )
 
-        # Iterate through each item in the forecast list
-        for forecast_item in self.forecast_list:
-            # start_time = forecast_item.get("startTime")
-            name = forecast_item.get("name")
-            temperature = forecast_item.get("temperature")
-            wind_speed = forecast_item.get("windSpeed")
-            wind_direction = forecast_item.get("windDirection")
-            short_forecast = forecast_item.get("shortForecast")
-            # detailed_forecast = forecast_item.get("detailedForecast")
-            # time = datetime.fromisoformat(start_time)
-            # time = time.strftime('%m-%d-%Y')
-            # print(f"{name}: {detailed_forecast}")
-            print(
-                f"{name:<15} {temperature:>4}°F | {wind_speed:12} {wind_direction:5} | {short_forecast}")
-            # print(f'{detailed_forecast}')
+        try:
+            # Iterate through each item in the forecast list
+            for forecast_item in self.forecast_list:
+                # start_time = forecast_item.get("startTime")
+                name = forecast_item.get("name")
+                temperature = forecast_item.get("temperature")
+                wind_speed = forecast_item.get("windSpeed")
+                wind_direction = forecast_item.get("windDirection")
+                short_forecast = forecast_item.get("shortForecast")
+                # detailed_forecast = forecast_item.get("detailedForecast")
+                # time = datetime.fromisoformat(start_time)
+                # time = time.strftime('%m-%d-%Y')
+                # print(f"{name}: {detailed_forecast}")
+                print(
+                    f"{name:<15} {temperature:>4}°F | {wind_speed:12} {wind_direction:5} | {short_forecast}")
+                # print(f'{detailed_forecast}')
+        except Exception as e:
+            print("Something went wrong. Let's try again")
+            print(e)
+            # raise exception is used to troubleshoot
+            # It raises the exception that was handled
+            # raise exception
 
 #-------------------------- DISPLAY 7 DAY DETAILED FORECAST ----------------------------#
     def display_7_day_detailed_forecast(self):
-        print("="*self._decorator_width)
-        print(
-            f"National Weather Service 7 Day Weather Forecast")
-        print(f"{self._address}")
-        print("="*self._decorator_width)
+
+        console.print(Panel.fit(
+            f"National Weather Service 7 Day Detailed Forecast\n{self._address}",
+            style="bold blue"
+        ))
+
         counter = 0
         # Iterate through each item in the forecast list
         for forecast_item in self.forecast_list:

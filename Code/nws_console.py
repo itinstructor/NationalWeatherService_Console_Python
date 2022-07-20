@@ -15,14 +15,13 @@ def menu():
     """
         Print menu for user, return menu choice
     """
-    print("-"*75)
-    print(f"[1] Get latest weather observation")
-    print(f"[2] Get 12 hour forecast")
-    print(f"[3] Get 7 day forecast")
-    print(f"[4] Get 7 day detailed forecast")
-    print(f"[5] Get active weather alerts")
-    print(f"[6] Get weather alerts")
-    print(f"[9] Get new location")
+    print(f"[1] Latest weather observation")
+    print(f"[2] 12 hour forecast")
+    print(f"[3] 7 day forecast")
+    print(f"[4] 7 day detailed forecast")
+    print(f"[5] Active weather alerts")
+    print(f"[6] Weather alerts")
+    print(f"[9] New location")
     menu_choice = input(f"[Enter] to quit. Enter your choice: ")
     return menu_choice
 
