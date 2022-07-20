@@ -1,14 +1,15 @@
-# National Weather Service Console Application in Python
+# National Weather Service CLI Application in Python
 
 ### Overview
-- Python3 console program using requests, National Weather Service API, and Nominatim from geopy.
+- Python3 CLI program using requests, [National Weather Service API](https://www.weather.gov/documentation/services-web-api), and Nominatim from [geopy](https://pypi.org/project/geopy/).
 - Includes current observations, forecast weather, and weather alerts.
 - Latitude and longitude are retrieved using Nominatim from geopy.
     - Windows: pip install geopy
     - LInux: pip3 install geopy
-- JSON sample response files used to build the program are in the json_response_files folder.
-- Rich is a Python library for writing rich text (with color and style) to the terminal, and for displaying advanced content such as tables, markdown, and syntax highlighted code.
-- A batch file is included for using nuitka to build to a Windows exe (nuitka_console.bat) 
+- JSON sample response files used to build the program are in the JSON folder.
+- [Rich](https://pypi.org/project/rich/) formatting is used to brighten up the application. 
+    - Rich is a Python library for rich text and beautiful formatting in the terminal.
+- A batch file is included for using [nuitka](https://pypi.org/project/Nuitka/) to build a Python program to a Windows exe (nuitka_console.bat) 
     - Windows: pip install nuitka
     - Linux: pip3 install nuitka
 
