@@ -53,14 +53,14 @@ class WeatherClass:
         """
         try:
             # Get location input from user
-            city = input("Enter city: ")
-            state = input("Enter state: ")
+            city = input(" Enter city: ")
+            state = input(" Enter state: ")
 
             # Get location lat, lng and address from geopy
             # NWS is US only
             self.lat, self.lng, self._address = geocode_geopy.geocode(
                 city, state, country="")
-            print(self._address)
+            print(f" {self._address}")
         except Exception as e:
             print("Something went wrong. Let's try again")
             print(e)
@@ -88,11 +88,11 @@ class WeatherClass:
             # Get gridpoints dictionary, locations for weather station coverage
             if(response.status_code == 200):
                 print(
-                    "[+] The connection to the National Weather Service was successful.")
+                    " [+] The connection to the National Weather Service was successful.")
                 # Get the gridpoints dictionary for weather station locations
                 self.grid_points_dict = response.json()
                 print(
-                    f"\r[+] Retrieved NWS Gridpoints for Weather Station Location")
+                    f" [+] Retrieved NWS Gridpoints for Weather Station Location")
 
             else:
                 print("[-] Did not get NWS Gridpoints")
@@ -478,7 +478,7 @@ class WeatherClass:
                 time = datetime.fromisoformat(start_time)
                 time = time.strftime('%I:%M %p')
                 print(
-                    f"{time:>8}: {temperature:>5.1f}°F | {wind_speed:>8} | {wind_direction:>5} | {short_forecast}")
+                    f" {time:>8}: {temperature:>5.1f}°F | {wind_speed:>8} | {wind_direction:>5} | {short_forecast}")
         except Exception as e:
             print("Something went wrong. Let's try again")
             print(e)
@@ -510,7 +510,7 @@ class WeatherClass:
                 # time = time.strftime('%m-%d-%Y')
                 # print(f"{name}: {detailed_forecast}")
                 print(
-                    f"{name:<15} {temperature:>4}°F | {wind_speed:12} {wind_direction:5} | {short_forecast}")
+                    f" {name:<15} {temperature:>4}°F | {wind_speed:12} {wind_direction:5} | {short_forecast}")
                 # print(f'{detailed_forecast}')
         except Exception as e:
             print("Something went wrong. Let's try again")
@@ -541,12 +541,12 @@ class WeatherClass:
             detailed_forecast = wrapper.fill(text=detailed_forecast)
             # time = datetime.fromisoformat(start_time)
             # time = time.strftime('%m-%d-%Y')
-            print(f"{name}: \n{detailed_forecast}\n")
+            print(f" {name}: \n{detailed_forecast}\n")
             # print(f"{temperature} °F | {wind_speed:5} {wind_direction}")
             # print(f'{detailed_forecast}')
             counter += 1
             if (counter % 4 == 0):
-                input("Press Enter for More")
+                input(" Press Enter for More")
                 self.clear_console()
                 # print("="*self.__decorator_width)
 

@@ -7,6 +7,13 @@
 """
 # Openweather map url, api key, and other weather utilities
 import nws_class
+# Windows: pip install rich
+# Linux: pip3 install rich
+# Import Console for console printing
+from rich.console import Console
+
+# Initialize rich.console
+console = Console(highlight=False)
 
 #-------------------------------- MENU -------------------------------------#
 
@@ -15,14 +22,15 @@ def menu():
     """
         Print menu for user, return menu choice
     """
-    print(f"[1] Latest weather observation")
-    print(f"[2] 12 hour forecast")
-    print(f"[3] 7 day forecast")
-    print(f"[4] 7 day detailed forecast")
-    print(f"[5] Active weather alerts")
-    print(f"[6] Weather alerts")
-    print(f"[9] New location")
-    menu_choice = input(f"[Enter] to quit. Enter your choice: ")
+    console.print("[green] (1)[/] Latest weather observation")
+    console.print("[green] (2)[/] 12 hour forecast")
+    console.print("[green] (3)[/] 7 day forecast")
+    console.print("[green] (4)[/] 7 day detailed forecast")
+    console.print("[green] (5)[/] Active weather alerts")
+    console.print("[green] (6)[/] Weather alerts")
+    console.print("[green] (9)[/] New location")
+    console.print("[green] [Enter][/] to quit. Enter your choice: ", end="")
+    menu_choice = input()
     return menu_choice
 
 
