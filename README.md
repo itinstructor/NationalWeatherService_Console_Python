@@ -7,6 +7,7 @@
     - Windows: pip install geopy
     - LInux: pip3 install geopy
 - JSON sample response files used to build the program are in the json_response_files folder.
+- Rich is a Python library for writing rich text (with color and style) to the terminal, and for displaying advanced content such as tables, markdown, and syntax highlighted code.
 - A batch file is included for using nuitka to build to a Windows exe (nuitka_console.bat) 
     - Windows: pip install nuitka
     - Linux: pip3 install nuitka
